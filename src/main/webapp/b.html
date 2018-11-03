@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="https://cdn.goeasy.io/goeasy.js"></script>
+<script type="text/javascript" src="/js/jquery-3.1.1.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		var goEasy = new GoEasy(
+			'rest-hangzhou.goeasy.io','BS-8442f6eab25947bda865f090d04826ba');
+		goEasy.publish({
+			channel : 'aaa',
+			message : 'Second message！'
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>广告位审核</title>
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+</head>
+<script>
+var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						tableload = table
+								.render({
+									elem : '#space',
+									url : '/check/checkspace',
+									page : 80,
+									cellMinWidth:true, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+
+									cols : [ [ //表头
+											{
+												field : 'sid',
+												
+												title : '广告位id',
+												sort : true
+											},
+											{
+												field : 'wide',
+												
+												title : '广告位宽'
+												
+											},
+											{
+												field : 'high',
+												title : '广告位高'
+											},
+											{
+												field : 'sitesurl',
+												title : '网站地址',
+												templet:function(d){
+												return "<a href='"+d.sitesurl+"' target='_blank'>点击进入查看</a>";
+												}
+											},
+											{
+												field : 'hits',
+												title : '点击量'
+											},
+											{
+												field : 'remark',
+												title : '广告位备注'
+											},
+											{
+												field : 's',
+												title : '广告位状态',
+												templet : function(d) {
+												if(d.s=='0')	return "可用";
+												else return "不可用";
+												}
+											},
+											
+											{
+												field : 'states',
+												title : '审核状态',
+												templet : function(d) {
+														return "待审核";
+												}
+											} ,
+											{
+													field : "",
+													title : "操作",
+													toolbar : "#barDemo"
+												}
+											] ]
+								});
+								//监听工具条
+							table.on('tool(table)', function(obj) {
+								var data = obj.data;
+								if (obj.event === 'check') {//点击审核调到showWin(data)方法
+								form.val("fm", data);
+									showspace(data);
+								}
+							});
+					});
+					function showspace(data){
+					//打开窗口
+			//拿到的index是一个重要的凭据，它是诸如layer.close(index)等方法的必传参数
+			var index = layer.open({
+				title : "广告位审核",
+				type : 1,//页面层
+				icon : 6,//图表
+				shadeClose : true,//点击遮罩层关闭弹窗
+				anim : 3,//弹出动画
+				content : $('#content'),
+				area : [ '500px', '590px' ],//宽高
+				btn : [ '审核通过', '审核不通过', '取消' ],//按钮回调函数1是yes，2是but2 function（）
+				btnAlign : 'c',
+				yes : function() {
+					checkindent(index, 5);//通过
+				},
+				btn2 : function() {
+					checkindent(index, 2);//驳回
+					return false;
+				}
+			});
+		}
+		//审核订单，返回审核备注信息
+		function checkindent(openindex, statecode) {//statecode传递的点击值，
+			var remark = "";
+			//输入层
+			layer.prompt({
+				formType : 2,//输入框类型，支持0（文本）默认1（密码）2（多行文本）
+				value : "",
+				title : "审核备注(可以为空)",
+				area : [ '200px', '150px' ]
+			}, function(value, index) {
+				remark = value; //获取传递的输入框的value
+				layer.close(index);//关闭输入框
+				var title = "";
+				if (statecode == 5) {
+					title = "审核通过";
+				}
+				if (statecode == 2) {
+					title = "驳回";
+				}
+				layer.confirm("是否" + title + "?", {
+					icon : 3,
+					title : "审核提示"
+				}, function(i) {
+					//提交数据
+					var sid = $("#sid").val();//网站编号
+					var aid = $("#aid").val();//审核人
+					var uid=$("#uid").val();//yonghu id
+					$.post("/check/addspce", {
+						"sid" : sid, //网站编号
+						"state" : statecode, //审核状态			
+						"aid" : aid, //操作人
+						"uid":uid,
+						"test" : remark, //备注
+					}, function(data) {
+						if (data == "ok") {
+							layer.msg("操作成功！", {
+								icon : 1
+							});
+						tableload.reload();
+						} else {
+							layer.msg("操作失败！", {
+								icon : 5
+							});
+						}
+						 tableload.reload();
+					});
+
+				layer.close(i);//关闭确认通过窗口
+				layer.close(openindex);//关闭open窗口
+				});
+			});
+		}
+					
+</script>
+<script id="barDemo" type="text/html">
+	<a class="layui-btn layui-btn-radius layui-btn-xs layui-btn-danger" lay-event="check">审核</a>
+</script>
+<body>
+<table id="space" lay-filter="table"></tabk=le>
+<div id="content" hidden>
+<form id="fm" method="post" style="width:100%; margin-top:5px;"
+		lay-filter="fm" class="layui-form">
+<input id="aid" name="aid"value="1" hidden>
+		<input id="sid" name="sid" hidden>
+		<input id="uid" name="uid" hidden>
+		<input id="aid" name="aid" value="1" hidden >
+</form>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+  <script type="text/javascript"src="https://cdn.goeasy.io/goeasy.js"></script>  
+<script src="/js/jquery-3.1.1.js"></script>
+</head>
+<body>
+
+ 
+    <script type="text/javascript">
+              alert(1)
+             var goEasy = new GoEasy({appkey: 'BS-8442f6eab25947bda865f090d04826ba'});
+                           goEasy.subscribe({
+                          channel: 'aaa',
+                          onMessage: function(message){
+                           alert('接收到消息:'+message.content);//拿到了信息之后，你可以做你任何想做的事
+                         }
+                         });
+                       
+                         
+   </script>    
+ 
+</body>
+</html>

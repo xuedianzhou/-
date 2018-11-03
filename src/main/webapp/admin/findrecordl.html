@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+<title></title>
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+<script>
+var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+	 var flow=null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						flow = layui.flow;
+						tableload = table
+								.render({
+									elem : '#money',
+									url : '/option/space',
+									page : 80,
+									cellMinWidth:true, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+
+									cols : [ [ //表头
+											{
+												field : 'uname',
+												
+												title : '用户名',
+												sort : true
+											},
+											{
+												field : 'proof',
+												
+												title : '用户身份证号'
+												
+											},
+											{
+												field : 'dsum',
+												title : '交易金额'
+											},
+											{
+												field : 'type',
+												title : '交易类型',
+												
+											},
+											{
+												field : 'ptime',
+												title : '交易时间'
+											},
+											{
+												field : 'remark',
+												title : '备注信息'
+											}
+											] ]
+								});
+								
+			$("#findname").click(function() {
+				var name = $("#name").val();
+				table.reload('space', {//重载表格数据
+					page : {
+						curr : 1, //重新从第 1 页开始
+					},
+					method : "post",
+					where : {
+						name : name,
+					}
+				});
+			});
+					});
+				
+</script>
+<body>
+<div class="demoTable">
+		输入姓名进行查询：
+		<div class="layui-inline">
+			<input class="layui-input" id="name" autocomplete="off">
+		</div>
+		<a id="findname" class="layui-btn layui-btn-radius layui-btn-normal">搜索</a>
+	 <table id="money" lay-filter="table"></table>
+		</div>
+</body>
+</html>

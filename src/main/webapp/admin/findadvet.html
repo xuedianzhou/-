@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+<title></title>
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+<script>
+	var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+	var flow = null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						flow = layui.flow;
+						tableload = table
+								.render({
+									elem : '#advet',
+									url : '/option/advet',
+									page : 80,
+									cellMinWidth : true, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+
+									cols : [ [ //表头
+											{
+												field : 'uname',
+
+												title : '用户名',
+												sort : true
+											},
+											{
+												field : 'aid',
+
+												title : '广告id'
+
+											},
+											{
+												field : 'ptime',
+												title : '广告创建时间'
+											},
+											{
+												field : 'hits',
+												title : '当前点击量'
+											},
+											{
+												field : 'unit',
+												title : '点击量单价'
+											},
+											{
+												field : 'aform',
+												title : '广告类型'
+											},
+											{
+												field : 'sum',
+												title : '金额预算',
+											},
+											{
+												field : 'ctime',
+												title : '订单创建时间'
+											},
+											{
+												field : '',
+												title : '当前点击消费的金额',
+												templet : function(d) {
+													return d.hits * d.unit;
+												}
+											}, {
+												field : 'state',
+												title : "订单状态",
+												templet : function(d) {
+													if (d.state == '0')
+														return "正在进行";
+													if (d.state == '2')
+														return "异常完成";
+													if (d.state == '1')
+														return "已完成";
+												}
+											} ] ]
+								});
+						//layui流加载
+						/* 	flow.load({
+						 elem: '#ll' //指定列表容器
+						 ,done: function(page, next){ //到达临界点（默认滚动触发），触发下一页
+						 var lis = [];
+						 //以jQuery的Ajax请求为例，请求下一页数据（注意：page是从2开始返回）
+						 $.get('/option/advet', function(res){
+						 //假设你的列表返回在data集合中
+						 layui.each(res.data, function(index, item){
+						 alert(item);
+						 lis.push('<li>'+ item.uname +'</li>');
+						 }); 
+						
+						 //执行下一页渲染，第二参数为：满足“加载更多”的条件，即后面仍有分页
+						 //pages为Ajax返回的总页数，只有当前页小于总页数的情况下，才会继续出现加载更多
+						
+						 });
+						 }
+						 });  */
+
+						//监听工具条
+						table.on('tool(table)', function(obj) {
+							var data = obj.data;
+							if (obj.event === 'check') {//点击审核调到showWin(data)方法
+								form.val("fm", data);
+								showspace(data);
+							}
+						});
+						$("#findname").click(function() {
+							var name = $("#name").val();
+							table.reload('advet', {//重载表格数据
+								page : {
+									curr : 1, //重新从第 1 页开始
+								},
+								method : "post",
+								where : {
+									name : name,
+								}
+							});
+						});
+					});
+</script>
+<body>
+	<div class="demoTable">
+		输入姓名进行查询：
+		<div class="layui-inline">
+			<input class="layui-input" id="name" autocomplete="off">
+		</div>
+		<a id="findname" class="layui-btn layui-btn-radius layui-btn-normal">搜索</a>
+		<table id="advet" lay-filter="table"></table>
+	</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+<title></title>
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+<script>
+var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+	 var flow=null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form','flow' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						flow = layui.flow;
+						tableload = table
+								.render({
+									elem : '#space',
+									url : '/option/space',
+									page : 80,
+									cellMinWidth:true, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+
+									cols : [ [ //表头
+											{
+												field : 'oid',
+												
+												title : '订单编号',
+												sort : true
+											},
+											{
+												field : 'sitesurl',
+												
+												title : '网站地址'
+												
+											},
+											{
+												field : 'sname',
+												title : '广告位名称'
+											},
+											{
+												field : 'uname',
+												title : '用户名',
+												
+											},
+											{
+												field : 'hits',
+												title : '当前点击量'
+											},
+											{
+												field : 'price',
+												title : '点击单价'
+											},
+											{
+												field : 'ptime',
+												title : '订单创建时间',
+											},
+											{
+													field : 'state',
+													title : "订单状态",
+												  templet: function(d){
+												if(d.state=='0')  return "正在进行";
+												if(d.state=='2') return "异常完成";
+												if(d.state=='1')return "已完成";												  }
+												}
+											] ]
+								});
+								
+								//监听工具条
+							table.on('tool(table)', function(obj) {
+								var data = obj.data;
+								if (obj.event === 'check') {//点击审核调到showWin(data)方法
+								form.val("fm", data);
+									showspace(data);
+								}
+							});
+			$("#findname").click(function() {
+				var name = $("#name").val();
+				table.reload('space', {//重载表格数据
+					page : {
+						curr : 1, //重新从第 1 页开始
+					},
+					method : "post",
+					where : {
+						name : name,
+					}
+				});
+			});
+					});
+				
+</script>
+<body>
+<div class="demoTable">
+		输入姓名进行查询：
+		<div class="layui-inline">
+			<input class="layui-input" id="name" autocomplete="off">
+		</div>
+		<a id="findname" class="layui-btn layui-btn-radius layui-btn-normal">搜索</a>
+	 <table id="space" lay-filter="table"></table>
+		</div>
+</body>
+</html>

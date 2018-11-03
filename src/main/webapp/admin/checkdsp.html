@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+<title></title>
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+<style>
+body {
+	background-color: white;
+}
+</style>
+<body>
+	<div style="margin-bottom: 5px;">
+
+		<!-- 示例-970 -->
+		<ins class="adsbygoogle"
+			style="display:inline-block;width:970px;height:90px"
+			data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
+
+	</div>
+	<table class="layui-hide" lay-filter="table" id="checkdsp"></table>
+	<script type="text/html" id="barDemo">
+  	<a class="layui-btn layui-btn-radius layui-btn-xs layui-btn-danger" lay-event="check">审核</a>
+</script>
+	<script>
+		
+	</script>
+	<script>
+		var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						tableload = table
+									.render({
+										elem : '#checkdsp',
+										url : '/check/checkdsp',
+										page : true,
+										cellMinWidth : 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+										,
+										cols : [ [ //表头
+												{
+													field : 'mid',
+													width : 150,
+													title : 'ID',
+													sort : true
+												},
+												{
+													field : 'mname',
+													width : 150,
+													title : '审核的广告名'
+												},
+												{
+													field : 'mimg',
+													width : 150,
+													title : '广告图片(点击显示大图)',
+													templet : function(d) {//当以对象里的方法的方式调用函数时，函数内的 this 是调用该函数的对象
+														//当函数被用作事件处理函数时，它的this指向触发事件的元素
+														return "<a href='javascript:void(0)' onclick='showp(this)' purl=img/yjh/"
+																+ d.mimg
+																+ "><img src=img/yjh/"
+																+ d.mimg
+																+ " height='100%' width='100%'/></a>";
+													}
+												},
+												{
+													field : 'murl',
+													width : 150,
+													title : '链接的路径',
+													templet : function(d) {
+														return "<a href='"+d.murl+"' target='_blank'>"+d.murl+"</a>";
+													}
+												}, {
+													field : 'uname',
+													title : '用户名',
+													width : '150'
+												}, {
+													field : 'uudit',
+													width : '150',
+													title : '审核状态',
+													sort : true,
+													templet : function(f) {
+														if (f.uudit == '0')
+															return '待审核';
+													}
+												}, {
+													field : "",
+													title : "操作",
+													align : "center",
+													toolbar : "#barDemo",
+													fixed : "right"
+												} ] ]
+									});
+
+							//监听工具条
+							table.on('tool(table)', function(obj) {
+								var data = obj.data;
+								if (obj.event === 'check') {//点击审核调到showWin(data)方法
+									form.val("fm", data);
+									showWin(data);
+								}
+							});
+
+						});
+		//显示图片
+		function showp(a) {
+			layer.open({
+				title : '图片显示',
+				offset : 't', //设置坐标在顶部
+				content : "<img src='" + $(a).attr("purl") //attr为被选的元素设置一到多个属性值
+						+ "' hight='100%' width='100%'/>"
+			});
+		}
+		//审核广告
+		function showWin(data) {
+			//打开窗口
+			//拿到的index是一个重要的凭据，它是诸如layer.close(index)等方法的必传参数
+			var index = layer.open({
+				title : "审核广告",
+				type : 1,//页面层
+				icon : 6,//图表
+				shadeClose : true,//点击遮罩层关闭弹窗
+				anim : 4,//弹出动画
+				content : $('#content'),
+				area : [ '500px', '590px' ],//宽高
+				btn : [ '审核通过', '审核不通过', '取消' ],//按钮回调函数1是yes，2是but2 function（）
+				btnAlign : 'c',
+				yes : function() {
+					checkindent(index, 5);//通过
+				},
+				btn2 : function() {
+					checkindent(index, 2);//驳回
+					return false;
+				}
+			});
+		}
+		//审核订单，返回审核备注信息
+		function checkindent(openindex, statecode) {//statecode传递的点击值，
+			var remark = "";
+			//输入层
+			layer.prompt({
+				formType : 2,//输入框类型，支持0（文本）默认1（密码）2（多行文本）
+				value : "",
+				title : "审核备注(可以为空)",
+				area : [ '200px', '150px' ]
+			}, function(value, index) {
+				remark = value; //获取传递的输入框的value
+				layer.close(index);//关闭输入框
+				var title = "";
+				if (statecode == 5) {
+					title = "审核通过";
+				}
+				if (statecode == 2) {
+					title = "驳回";
+				}
+				layer.confirm("是否" + title + "?", {
+					icon : 3,
+					title : "审核提示"
+				}, function(i) {
+					//提交数据
+					var mid = $("#mid").val();//广告编号
+					var aid = $("#aid").val();//审核人
+					var uid = $("#id").val();//用户id
+					$.post("/check/addcheckdsp", {
+						"mid" : mid, //广告编号
+						"state" : statecode, //审核状态			
+						"aid" : aid, //操作人
+						"uid" : uid,
+						"test" : remark, //备注
+					}, function(data) {
+						if (data == "ok") {
+							layer.msg("操作成功！", {
+								icon : 1
+							});
+							tableload.reload();
+						} else {
+							layer.msg("操作失败！", {
+								icon : 5
+							});
+						}
+					});
+
+					layer.close(i);//关闭确认通过窗口
+					layer.close(openindex);//关闭open窗口
+				});
+			});
+		}
+	</script>
+	<div hidden id="content">
+		<form id="fm" method="post" style="width:100%; margin-top:5px;"
+			lay-filter="fm" class="layui-form">
+			<input name="mid" id="mid" hidden> <input name="id" id="id">
+			<div class="layui-form-item">
+				<label class="layui-form-label">审核人</label>
+				<div class="layui-input-block">
+					<input readonly="readonly" value="1" style="width:330px;" id="aid"
+						name="aid" required lay-verify="required" class="layui-input">
+				</div>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

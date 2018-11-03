@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/layui-v2.3.0/layui/css/layui.css"
+	type="text/css" media="all">
+<title></title>
+</head>
+<script src="/js/jquery-3.1.1.js"></script>
+<script src="/layui-v2.3.0/layui/layui.js"></script>
+<script>
+var $ = null;
+	var table = null;
+	var layer = null;
+	var form = null;
+	var tableload = null;
+	 var flow=null;
+
+	layui
+			.use(
+					[ 'layer', 'table', 'form' ],
+					function() {
+						$ = layui.jquery;
+						table = layui.table;//获取layui的表格对象
+						layer = layui.layer;
+						form = layui.form;
+						flow = layui.flow;
+						tableload = table
+								.render({
+									elem : '#feed',
+									url : '/option/feed',
+									page : 80,
+									cellMinWidth:true, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+
+									cols : [ [ //表头
+											{
+												field : 'uname',
+												
+												title : '用户名',
+												sort : true
+											},
+											{
+												field : 'orderid',
+												
+												title : '反馈的订单'
+												
+											},
+											{
+												field : 'matter',
+												title : '反馈内容'
+											},
+											{
+												field : 'ptime',
+												title : '日期',
+												
+											},
+											{
+											  field:'',
+											  title:'点击回复',
+											  toolbar: '#barDemo'
+											}
+											] ]
+								});
+								
+								//监听工具条
+							table.on('tool(table)', function(obj) {
+								var data = obj.data;
+								if (obj.event === 'reply') {//点击审核调到showWin(data)方法
+								form.val("fm", data);
+									showfeed();
+								}
+								});	
+								
+			
+					function showfeed(){
+					 layer.prompt({
+				formType : 2,//输入框类型，支持0（文本）默认1（密码）2（多行文本）
+				value : "",
+				title : "回复内容",
+				area : [ '200px', '150px' ]
+			}, function(value, index) {
+			   var content=value;		//消息内容
+			   var types='反馈订单';		//消息类型
+			   var uid=$("#uid").val();		//用户
+			   layer.msg(uid);
+			    $.post("option/addmesg",{
+			   	"matter":content,
+			   	"type":types,
+			   	"uid":uid,
+			   },function(data){
+			   		if("ok"==data){
+			   			layer.msg("订单回执");
+			   		tableload.reload;
+			   		}else{
+			   		layer.msg("回执失败");
+			   		}
+			   }) 
+			   		layer.close(index);//关闭输入框
+			   })	 	
+			 			
+			   }		
+				});	
+</script>
+<script type="text/html" id="barDemo">
+  	<a class="layui-btn layui-btn-radius layui-btn-xs layui-btn-danger" lay-event="reply">回复</a>
+</script>
+<body>
+	<table id="feed" lay-filter="table"></table>
+	<div id="content" hidden>
+		<form id="fm" method="post" style="width:100%; margin-top:5px;"
+			lay-filter="fm" class="layui-form">
+			<input hidden name="uid" id="uid">
+		</form>
+	</div>
+</body>
+</html>
